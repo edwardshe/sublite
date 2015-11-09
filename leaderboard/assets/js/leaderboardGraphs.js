@@ -32,10 +32,10 @@ function draw_line_graph(chart_id, my_data)
 	var key_array = new Array();
 	var value_array = new Array();
 
-	for(var key in my_data)
+	for(var i = 0; i < my_data.length; i++)
 	{
-		key_array.push(key);
-		value_array.push(my_data[key]);
+		key_array.push(my_data[i][0]);
+		value_array.push(my_data[i][1]);
 	}
 
 	var data = {

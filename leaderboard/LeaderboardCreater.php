@@ -69,6 +69,46 @@
 			arsort($school_names);
 			return array_slice($school_names, 0, $number);
 		}
+
+		function specific_school_per_day($my_school, $number_intervals)
+		{
+			$conn = MongoSingleton::getMongoCon();
+			$db = $conn->sublite;
+			$emails = $db->emails;
+			$cursor = $emails->find();
+			
+			$pattern = "/(.*)@(.*)/";
+
+			$time_now = time()-18000;
+			$intervals = array();
+			$result_array = array();
+
+			for($x = $number_intervals; $x > 0; $x--)
+			{
+				array_push($intervals, (strtotime("today -" . ($x-1) . " day")-18000));
+				array_push($result_array, array(date('D', (strtotime("today -" . ($x-1) . " day")-18000)), 0));
+			}
+			array_push($intervals, $time_now);
+
+			//$intervals = array_map(function ($x) { return $x-46035245; } , $intervals);
+
+			foreach($cursor as $doc)
+			{
+				$success = preg_match($pattern, $doc["email"], $match);
+				if($success && $match[2] == $my_school)
+				{
+					$doc_time = $doc["_id"]->getTimeStamp();
+					for($i = 0; $i < $number_intervals; $i++)
+					{
+						if($doc_time >= $intervals[$i] and $doc_time < $intervals[$i+1])
+							$result_array[$i][1]++;
+					}
+				}
+			}
+
+			return $result_array;
+		}
+
 	}
 
 	$CLeaderboardCreater = new LeaderboardCreater();
